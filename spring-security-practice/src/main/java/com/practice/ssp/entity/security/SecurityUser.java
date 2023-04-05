@@ -1,5 +1,7 @@
 package com.practice.ssp.entity.security;
 
+import com.practice.ssp.entity.Authority;
+import com.practice.ssp.entity.Role;
 import com.practice.ssp.entity.User;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
@@ -7,6 +9,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @AllArgsConstructor
@@ -16,6 +20,10 @@ public class SecurityUser implements UserDetails {
 
   public long getId() {
     return user.getId();
+  }
+
+  public Set<Role> getRoles() {
+    return user.getRoles();
   }
 
   @Override
@@ -30,9 +38,14 @@ public class SecurityUser implements UserDetails {
 
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
-    return user.getRoles().stream()
-        .map(role -> new SimpleGrantedAuthority(role.getName()))
-        .collect(Collectors.toList());
+    Set<Role> roles = this.getRoles();
+    Set<Authority> authorities = new HashSet<>();
+    for (Role role : roles) {
+      authorities.addAll(role.getAuthorities());
+    }
+    return authorities.stream()
+        .map(authority -> new SimpleGrantedAuthority(authority.getName()))
+        .collect(Collectors.toSet());
   }
 
   @Override

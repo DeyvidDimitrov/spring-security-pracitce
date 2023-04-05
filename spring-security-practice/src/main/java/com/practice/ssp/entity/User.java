@@ -74,11 +74,14 @@ public class User {
         this.lastName = lastName;
         this.email = email;
         this.password = password;
-        this.roles = Collections.singleton(new Role(1L, "ROLE_USER"));
     }
 
 
     public String getFullName() {
         return firstName + " " + lastName;
+    }
+
+    public void addRole(Role role) {
+        roles.add(role);
     }
 }

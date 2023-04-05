@@ -1,11 +1,15 @@
 package com.practice.ssp.services;
 
+import java.util.Collections;
+
 import com.practice.ssp.config.jwt.JwtUtils;
 import com.practice.ssp.dtos.AuthenticationResponse;
 import com.practice.ssp.dtos.UserRegistrationDto;
 import com.practice.ssp.dtos.UsernameAndPasswordAuthenticationRequest;
+import com.practice.ssp.entity.Role;
 import com.practice.ssp.entity.User;
 import com.practice.ssp.entity.security.SecurityUser;
+import com.practice.ssp.repository.RoleRepository;
 import com.practice.ssp.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AuthenticationService {
   private final UserRepository repository;
+  private final RoleRepository roleRepository;
   private final JwtUtils jwtUtils;
   private final AuthenticationManager authenticationManager;
   private final BCryptPasswordEncoder bCryptPasswordEncoder;
@@ -71,6 +76,11 @@ public class AuthenticationService {
             dto.getEmail(),
             dto.getPassword()
     );
+
+    // assign default role to the user
+    Role role = roleRepository.findByName("USER")
+        .orElseThrow(() -> new RuntimeException("Default role not found."));
+    user.setRoles(Collections.singleton(role));
 
     String encodedPassword = bCryptPasswordEncoder.encode(user.getPassword());
 

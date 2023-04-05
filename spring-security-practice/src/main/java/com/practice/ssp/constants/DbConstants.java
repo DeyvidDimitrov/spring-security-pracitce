@@ -6,6 +6,7 @@ public interface DbConstants {
 
     // tables
     String TBL_USERS = "users";
+    String TBL_AUTHORITIES = "authorities";
     String TBL_BIOLOGICAL_DATA = "biological_data";
     String TBL_MEASUREMENT_VERSION = "measurement_version";
     String TBL_TARGET_MACROS = "target_macros";

@@ -53,9 +53,7 @@ public class HomeController {
 
     @GetMapping("/roles")
     public ResponseEntity<String> getRoles() {
-        var u = SecurityContextHolder.getContext().getAuthentication();
-        u.getAuthorities().forEach(System.out::println);
-        System.out.println(roleRepository.findAll());
+        roleRepository.findByName("USER").ifPresent(System.out::println);
         return ResponseEntity.ok("Roles");
     }
 
