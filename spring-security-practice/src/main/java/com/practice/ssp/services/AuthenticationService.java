@@ -1,0 +1,81 @@
+package com.practice.ssp.services;
+
+import com.practice.ssp.config.jwt.JwtUtils;
+import com.practice.ssp.dtos.AuthenticationResponse;
+import com.practice.ssp.dtos.UserRegistrationDto;
+import com.practice.ssp.dtos.UsernameAndPasswordAuthenticationRequest;
+import com.practice.ssp.entity.User;
+import com.practice.ssp.entity.security.SecurityUser;
+import com.practice.ssp.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@RequiredArgsConstructor
+public class AuthenticationService {
+  private final UserRepository repository;
+  private final JwtUtils jwtUtils;
+  private final AuthenticationManager authenticationManager;
+  private final BCryptPasswordEncoder bCryptPasswordEncoder;
+
+  @Transactional(readOnly = true)
+  public AuthenticationResponse authenticate(UsernameAndPasswordAuthenticationRequest request) {
+    try {
+      authenticationManager.authenticate(
+          new UsernamePasswordAuthenticationToken(
+              request.getUsername(),
+              request.getPassword()
+          )
+      );
+    } catch (Exception e) {
+      System.out.println(e.getClass());
+      System.out.println(e.getStackTrace());
+      System.out.println(e.getMessage());
+      throw new RuntimeException("Invalid username or password");
+    }
+    authenticationManager.authenticate(
+        new UsernamePasswordAuthenticationToken(
+            request.getUsername(),
+            request.getPassword()
+        )
+    );
+    System.out.println("Authentication successful");
+    var user = repository.findByEmail(request.getUsername())
+        .orElseThrow(() -> new EntityNotFoundException("User not found!"));
+    SecurityUser securityUser = new SecurityUser(user);
+    var jwtToken = jwtUtils.generateToken(securityUser);
+    return AuthenticationResponse.builder()
+        .token(jwtToken)
+        .id(user.getId())
+        .username(securityUser.getUsername())
+        .authorities(securityUser.getAuthorities().toString())
+        .build();
+  }
+
+  @Transactional
+  public void register(UserRegistrationDto dto) {
+    boolean userExists = repository.findByEmail(dto.getEmail())
+            .isPresent();
+
+    if (userExists) {
+      throw new RuntimeException("Email already taken");
+    }
+
+    User user = new User(dto.getFirstName(),
+            dto.getLastName(),
+            dto.getEmail(),
+            dto.getPassword()
+    );
+
+    String encodedPassword = bCryptPasswordEncoder.encode(user.getPassword());
+
+    user.setPassword(encodedPassword);
+
+    repository.save(user);
+  }
+}
