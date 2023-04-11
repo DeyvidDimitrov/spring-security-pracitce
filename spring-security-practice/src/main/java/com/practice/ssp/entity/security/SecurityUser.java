@@ -1,6 +1,5 @@
 package com.practice.ssp.entity.security;
 
-import com.practice.ssp.entity.Authority;
 import com.practice.ssp.entity.Role;
 import com.practice.ssp.entity.User;
 import lombok.AllArgsConstructor;
@@ -22,8 +21,8 @@ public class SecurityUser implements UserDetails {
     return user.getId();
   }
 
-  public Set<Role> getRoles() {
-    return user.getRoles();
+  public Role getRoles() {
+    return user.getRole();
   }
 
   @Override
@@ -38,14 +37,9 @@ public class SecurityUser implements UserDetails {
 
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
-    Set<Role> roles = this.getRoles();
-    Set<Authority> authorities = new HashSet<>();
-    for (Role role : roles) {
-      authorities.addAll(role.getAuthorities());
-    }
-    return authorities.stream()
-        .map(authority -> new SimpleGrantedAuthority(authority.getName()))
-        .collect(Collectors.toSet());
+    Set<GrantedAuthority> authorities = new HashSet<>();
+    authorities.add(new SimpleGrantedAuthority(user.getRole().getName()));
+    return authorities;
   }
 
   @Override

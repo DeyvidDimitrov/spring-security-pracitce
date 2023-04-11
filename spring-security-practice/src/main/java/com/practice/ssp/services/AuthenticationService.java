@@ -57,6 +57,8 @@ public class AuthenticationService {
     return AuthenticationResponse.builder()
         .token(jwtToken)
         .id(user.getId())
+        .firstName(user.getFirstName())
+        .lastName(user.getLastName())
         .username(securityUser.getUsername())
         .authorities(securityUser.getAuthorities().toString())
         .build();
@@ -78,9 +80,9 @@ public class AuthenticationService {
     );
 
     // assign default role to the user
-    Role role = roleRepository.findByName("USER")
+    Role role = roleRepository.findByName("ROLE_USER")
         .orElseThrow(() -> new RuntimeException("Default role not found."));
-    user.setRoles(Collections.singleton(role));
+    user.setRole(role);
 
     String encodedPassword = bCryptPasswordEncoder.encode(user.getPassword());
 

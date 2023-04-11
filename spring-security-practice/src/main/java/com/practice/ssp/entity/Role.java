@@ -47,14 +47,6 @@ public class Role {
     @Column(nullable = false, unique = true)
     private String name;
 
-
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "role_authorities",
-               joinColumns = @JoinColumn(name = "role_id"),
-               inverseJoinColumns = @JoinColumn(name = "authority_id")
-    )
-    private Set<Authority> authorities = new HashSet<>();
-
     public Role(String name) {
         this.name = name;
     }
